@@ -41,36 +41,20 @@ The Account Linking Protocol enables games to link their independent user accoun
 
 #### HTTP Sequence for Account Linking
 
-```
-┌──────────┐                      ┌──────────┐                      ┌──────────┐
-│   Game   │                      │    OGS   │                      │   User   │
-│  Server  │                      │ Platform │                      │  Browser │
-└────┬─────┘                      └────┬─────┘                      └────┬─────┘
-     │                                 │                                 │
-     │ 1. Request Link Token           │                                 │
-     │ ────────────────────────────>   │                                 │
-     │                                 │                                 │
-     │ 2. Return Link Token & URL      │                                 │
-     │ <────────────────────────────   │                                 │
-     │                                 │                                 │
-     │ 3. Redirect to Link URL         │                                 │
-     │ ─────────────────────────────────────────────────────────────>   │
-     │                                 │                                 │
-     │                                 │ 4. User Authenticates          │
-     │                                 │ <────────────────────────────  │
-     │                                 │                                 │
-     │                                 │ 5. User Confirms Link          │
-     │                                 │ <────────────────────────────  │
-     │                                 │                                 │
-     │                                 │ 6. Redirect to Game Callback   │
-     │                                 │ ────────────────────────────>  │
-     │                                 │                                 │
-     │ 7. Verify Link Status           │                                 │
-     │ ────────────────────────────>   │                                 │
-     │                                 │                                 │
-     │ 8. Return Link Information      │                                 │
-     │ <────────────────────────────   │                                 │
-     │                                 │                                 │
+```mermaid
+sequenceDiagram
+    participant Game as Game Server
+    participant OGS as OGS Platform
+    participant User as User Browser
+    
+    Game->>OGS: 1. Request Link Token
+    OGS-->>Game: 2. Return Link Token & URL
+    Game->>User: 3. Redirect to Link URL
+    User->>OGS: 4. User Authenticates
+    User->>OGS: 5. User Confirms Link
+    OGS->>User: 6. Redirect to Game Callback
+    Game->>OGS: 7. Verify Link Status
+    OGS-->>Game: 8. Return Link Information
 ```
 
 #### Required API Endpoints
@@ -144,30 +128,18 @@ The Web Auth Token Protocol enables seamless single sign-on between the OGS plat
 
 ##### HTTP Sequence for Web Auth Token
 
-```
-┌──────────┐                      ┌──────────┐                      ┌──────────┐
-│  OGS App │                      │    OGS   │                      │   Game   │
-│          │                      │ Platform │                      │  Server  │
-└────┬─────┘                      └────┬─────┘                      └────┬─────┘
-     │                                 │                                 │
-     │ 1. Request Web Auth Code        │                                 │
-     │ ────────────────────────────>   │                                 │
-     │                                 │                                 │
-     │ 2. Return Web Auth Code         │                                 │
-     │ <────────────────────────────   │                                 │
-     │                                 │                                 │
-     │ 3. Open Game URL with Code      │                                 │
-     │ ─────────────────────────────────────────────────────────────>   │
-     │                                 │                                 │
-     │                                 │ 4. Verify Web Auth Code         │
-     │                                 │ <────────────────────────────  │
-     │                                 │                                 │
-     │                                 │ 5. Return User Information      │
-     │                                 │ ────────────────────────────>  │
-     │                                 │                                 │
-     │                                 │ 6. Create Game Session         │
-     │                                 │ <───────────────────────────   │
-     │                                 │                                 │
+```mermaid
+sequenceDiagram
+    participant App as OGS App
+    participant OGS as OGS Platform
+    participant Game as Game Server
+    
+    App->>OGS: 1. Request Web Auth Code
+    OGS-->>App: 2. Return Web Auth Code
+    App->>Game: 3. Open Game URL with Code
+    Game->>OGS: 4. Verify Web Auth Code
+    OGS-->>Game: 5. Return User Information
+    Game->>Game: 6. Create Game Session
 ```
 
 ##### Required API Endpoints
@@ -224,6 +196,19 @@ Content-Type: application/json
 
 The Token Refresh Protocol enables games to refresh expired session tokens using a refresh token.
 
+##### HTTP Sequence for Token Refresh
+
+```mermaid
+sequenceDiagram
+    participant Game as Game Server
+    participant OGS as OGS Platform
+    
+    Note over Game: Session token expires
+    Game->>OGS: 1. Request new token with refresh token
+    OGS-->>Game: 2. Return new session token
+    Note over Game: Update stored token
+```
+
 ##### Required API Endpoints
 
 ###### Refresh Token (Game Server → OGS Provider)
@@ -266,30 +251,18 @@ Push notifications allow games to engage users even when they're not actively pl
 
 #### HTTP Sequence for Sending Notifications
 
-```
-┌──────────┐                      ┌──────────┐                      ┌──────────┐
-│   Game   │                      │    OGS   │                      │   User   │
-│  Server  │                      │ Platform │                      │  Device  │
-└────┬─────┘                      └────┬─────┘                      └────┬─────┘
-     │                                 │                                 │
-     │ 1. Send Notification            │                                 │
-     │ ────────────────────────────>   │                                 │
-     │                                 │                                 │
-     │ 2. Validate Request            │                                 │
-     │ <───────────────────────────   │                                 │
-     │                                 │                                 │
-     │                                 │ 3. Deliver Notification         │
-     │                                 │ ────────────────────────────>  │
-     │                                 │                                 │
-     │ 4. Return Delivery Status       │                                 │
-     │ <────────────────────────────   │                                 │
-     │                                 │                                 │
-     │ 5. Check Notification Status    │                                 │
-     │ ────────────────────────────>   │                                 │
-     │                                 │                                 │
-     │ 6. Return Updated Status        │                                 │
-     │ <────────────────────────────   │                                 │
-     │                                 │                                 │
+```mermaid
+sequenceDiagram
+    participant Game as Game Server
+    participant OGS as OGS Platform
+    participant Device as User Device
+    
+    Game->>OGS: 1. Send Notification
+    OGS->>OGS: 2. Validate Request
+    OGS->>Device: 3. Deliver Notification
+    OGS-->>Game: 4. Return Delivery Status
+    Game->>OGS: 5. Check Notification Status
+    OGS-->>Game: 6. Return Updated Status
 ```
 
 #### Required API Endpoints
@@ -399,36 +372,57 @@ TV casting allows games to be displayed on larger screens while using mobile dev
 
 #### HTTP Sequence for Casting
 
+```mermaid
+sequenceDiagram
+    participant Game as Game Client
+    participant OGS as OGS Platform
+    participant Cast as Chromecast Device
+    
+    Game->>OGS: 1. Create Cast Session
+    OGS-->>Game: 2. Return Session Info
+    OGS->>Cast: 3. Initialize Receiver App
+    Game->>Game: 4. Switch to Controller Mode
+    Game->>OGS: 5. Send Input Events
+    OGS->>Cast: 6. Forward Input Events
+    Game->>OGS: 7. End Cast Session
+    OGS->>Cast: 8. Terminate Receiver App
 ```
-┌──────────┐                      ┌──────────┐                      ┌──────────┐
-│   Game   │                      │    OGS   │                      │Chromecast│
-│  Client  │                      │ Platform │                      │  Device  │
-└────┬─────┘                      └────┬─────┘                      └────┬─────┘
-     │                                 │                                 │
-     │ 1. Create Cast Session          │                                 │
-     │ ────────────────────────────>   │                                 │
-     │                                 │                                 │
-     │ 2. Return Session Info          │                                 │
-     │ <────────────────────────────   │                                 │
-     │                                 │                                 │
-     │                                 │ 3. Initialize Receiver App      │
-     │                                 │ ────────────────────────────>  │
-     │                                 │                                 │
-     │ 4. Switch to Controller Mode   │                                 │
-     │ <───────────────────────────   │                                 │
-     │                                 │                                 │
-     │ 5. Send Input Events            │                                 │
-     │ ────────────────────────────>   │                                 │
-     │                                 │                                 │
-     │                                 │ 6. Forward Input Events         │
-     │                                 │ ────────────────────────────>  │
-     │                                 │                                 │
-     │ 7. End Cast Session             │                                 │
-     │ ────────────────────────────>   │                                 │
-     │                                 │                                 │
-     │                                 │ 8. Terminate Receiver App       │
-     │                                 │ ────────────────────────────>  │
-     │                                 │                                 │
+
+#### System Architecture
+
+```mermaid
+graph TD
+    subgraph "Mobile Device"
+        App[OGS Mobile App]
+        WebView[WebView]
+        GameUI[Game UI]
+        ControllerUI[Controller UI]
+        CastSDK[Google Cast SDK]
+    end
+    
+    subgraph "OGS Platform"
+        API[OGS API]
+        CastService[Cast Service]
+        SessionMgr[Session Manager]
+    end
+    
+    subgraph "TV"
+        Chromecast[Chromecast Device]
+        ReceiverApp[Receiver App]
+        GameView[Game View]
+    end
+    
+    GameUI -->|Uses| WebView
+    WebView -->|Communicates with| App
+    App -->|Uses| CastSDK
+    CastSDK -->|Connects to| Chromecast
+    
+    GameUI -->|Switches to| ControllerUI
+    ControllerUI -->|Sends input| API
+    API -->|Routes to| CastService
+    CastService -->|Manages| SessionMgr
+    SessionMgr -->|Sends data to| ReceiverApp
+    ReceiverApp -->|Renders| GameView
 ```
 
 #### Required API Endpoints
@@ -561,15 +555,17 @@ Create a `.well-known/opengame-association.json` file at your domain root:
 
 The `VERIFICATION_TOKEN` will be provided during certification. Include only the features you've implemented in the features array. The `apiVersion` field should match the version of the OGS API you're implementing (currently "v1").
 
-### 2. Trigger Verification
+### 2. Certification Flow
 
-After creating the `.well-known` file, trigger the verification process by making a request to:
-
+```mermaid
+graph TD
+    A[1. Create .well-known file] --> B[2. Trigger verification]
+    B --> C[3. Receive API key by email]
+    C --> D[4. Integrate API key in backend]
+    D --> E[5. Test implementation]
+    E --> F[6. Submit for final review]
+    F --> G[7. Receive certification]
 ```
-https://opengame.org/api/v1/verify?host=your-game-domain.com
-```
-
-Note: This endpoint is rate-limited to prevent abuse. Please avoid making multiple requests in quick succession.
 
 ### 3. API Key Generation
 
@@ -586,6 +582,35 @@ While this specification defines the protocols at the HTTP level, we provide SDK
 - **[auth-kit](https://github.com/open-game-collective/auth-kit)**: Implementation of the Account Linking Protocol
 - **[notification-kit](https://github.com/open-game-collective/notification-kit)**: Implementation of the Push Notification Protocol
 - **[cast-kit](https://github.com/open-game-collective/cast-kit)**: Implementation of the TV Casting Protocol
+
+## Integration Overview
+
+```mermaid
+graph TD
+    subgraph "Your Game"
+        GameServer[Game Server]
+        GameClient[Game Client]
+        AuthKit[auth-kit]
+        NotificationKit[notification-kit]
+        CastKit[cast-kit]
+    end
+    
+    subgraph "OGS System"
+        OGSAPI[OGS API]
+        OGSApp[OGS Mobile App]
+        OGSPlatform[OGS Platform]
+    end
+    
+    GameServer -->|Uses| AuthKit
+    GameServer -->|Uses| NotificationKit
+    GameClient -->|Uses| CastKit
+    
+    AuthKit -->|Communicates with| OGSAPI
+    NotificationKit -->|Sends notifications via| OGSAPI
+    CastKit -->|Communicates with| OGSApp
+    
+    OGSApp -->|Enables native features| OGSPlatform
+```
 
 ## Future Extensions
 
